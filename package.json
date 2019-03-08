@@ -1,0 +1,27 @@
+{
+  "name": "native-mouse",
+  "version": "1.0.0",
+  "description": "Native Mouse tracking",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {
+    "test-node": "test\\run.bat node"
+  },
+  "keywords": [
+    "track",
+    "mouse",
+    "events",
+    "windows",
+    "mac",
+    "osx",
+    "native",
+    "screen",
+    "display",
+    "position"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "nan": "^2.12.1"
+  }
+}
