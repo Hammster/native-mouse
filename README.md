@@ -19,7 +19,7 @@ Currently there are no prepacked `.node` files for electron, you can build them 
 The module returns an event emitter instance.
 
 ```javascript
-var mouse = require('win-mouse')()
+const mouse = require('native-mouse')
 
 mouse.on('move', function(x, y) {
 	console.log(x, y)
@@ -27,8 +27,7 @@ mouse.on('move', function(x, y) {
 ```
 
 ```javascript
-import * as mouseFactory from 'mouse'
-const mouse = mouseFactory()
+import mouse from 'native-mouse'
 
 mouse.on('move', function(x, y) {
 	console.log(x, y)
