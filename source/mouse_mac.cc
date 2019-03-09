@@ -171,16 +171,37 @@ void Mouse::HandleSend() {
 			eventBuffer[readIndex]->type
 		};
 		readIndex = (readIndex + 1) % BUFFER_SIZE;
-
 		const char* name;
 
-		if(e.type == kCGEventLeftMouseDown) name = LEFT_DOWN;
-		if(e.type == kCGEventLeftMouseUp) name = LEFT_UP;
-		if(e.type == kCGEventRightMouseDown) name = RIGHT_DOWN;
-		if(e.type == kCGEventRightMouseUp) name = RIGHT_UP;
-		if(e.type == kCGEventMouseMoved) name = MOVE;
-		if(e.type == kCGEventLeftMouseDragged) name = LEFT_DRAG;
-		if(e.type == kCGEventRightMouseDragged) name = RIGHT_DRAG;
+		switch (e.type)
+		{
+			case kCGEventLeftMouseDown:
+				name = LEFT_DOWN;
+				break;
+			
+			case kCGEventLeftMouseUp:
+				name = LEFT_UP;
+				break;
+
+			case kCGEventRightMouseDown:
+				name = RIGHT_DOWN;
+				break;
+
+			case kCGEventMouseMoved:
+				name = RIGHT_UP;
+				break;
+
+			case kCGEventLeftMouseDragged:
+				name = LEFT_DRAG;
+				break;
+
+			case kCGEventRightMouseDragged:
+				name = RIGHT_DRAG;
+				break;
+
+			default:
+				break;
+		}
 
 		Local<Value> argv[] = {
 			Nan::New<String>(name).ToLocalChecked(),

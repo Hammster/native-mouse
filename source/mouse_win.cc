@@ -101,7 +101,6 @@ void Mouse::HandleSend() {
 	if(stopped) return;
 
 	Nan::HandleScope scope;
-
 	uv_mutex_lock(&lock);
 
 	while (readIndex != writeIndex) {
@@ -113,11 +112,31 @@ void Mouse::HandleSend() {
 		readIndex = (readIndex + 1) % BUFFER_SIZE;
 		const char* name;
 
-		if (e.type == WM_LBUTTONDOWN) name = LEFT_DOWN;
-		if (e.type == WM_LBUTTONUP) name = LEFT_UP;
-		if (e.type == WM_RBUTTONDOWN) name = RIGHT_DOWN;
-		if (e.type == WM_RBUTTONUP) name = RIGHT_UP;
-		if (e.type == WM_MOUSEMOVE) name = MOVE;
+		switch (e.type)
+		{
+			case WM_LBUTTONDOWN:
+				name = LEFT_DOWN;
+				break;
+			
+			case WM_LBUTTONUP:
+				name = LEFT_UP;
+				break;
+
+			case WM_RBUTTONDOWN:
+				name = RIGHT_DOWN;
+				break;
+
+			case WM_RBUTTONUP:
+				name = RIGHT_UP;
+				break;
+
+			case WM_MOUSEMOVE:
+				name = MOVE;
+				break;
+		
+			default:
+				break;
+		}
 
 		Local<Value> argv[] = {
 			Nan::New<String>(name).ToLocalChecked(),
