@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Native Mouse tracking",
   "main": "index.js",
-  "typings": "index.d.ts",
+  "typings": "./index.d.ts",
   "scripts": {
-    "test-node": "test\\run.bat node"
+    "rebuild": "node-gyp rebuild",
+    "test": "node -r esm ./test/index.js"
   },
   "keywords": [
     "track",
@@ -23,5 +24,9 @@
   "dependencies": {
     "bindings": "^1.5.0",
     "nan": "^2.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^11.11.0",
+    "esm": "^3.2.13"
   }
 }
