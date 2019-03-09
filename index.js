@@ -32,7 +32,7 @@ class NativeMouseInstance extends EventEmitter {
 			if(this.mouse) {
 				this.mouse.destroy()
 			}
-			mouse = null;
+			this.mouse = null;
 		}
 
 		this.init = this.init.bind(this)
@@ -41,7 +41,7 @@ class NativeMouseInstance extends EventEmitter {
 	init() {
 		this.mouse = new Mouse((type, x, y) => {
 			if(isWindows) {
-
+				// Windows has no nativ left-drag and right-drag
 				switch(type) {
 					case 'left-down':
 						this.left = true
@@ -80,11 +80,10 @@ const instance = new NativeMouseInstance()
 
 // cleanup the message loop
 function exitHandler(options, exitCode) {
-	console.log('EXIT')
 	instance.destroy()
 
-    if (options.exit) {
-		process.exit()
+  if (options.exit) {
+		process.exit(exitCode)
 	}
 }
 
