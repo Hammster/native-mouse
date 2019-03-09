@@ -16,4 +16,6 @@ for (const event of events) {
     })
 }
 
+mouse.destroy()
+
 // @TODO trigger mouse automation
