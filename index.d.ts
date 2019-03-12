@@ -13,7 +13,7 @@ declare module 'native-mouse' {
         RIGHT_DRAG = 'right-drag'
     }
 
-    export type NativeMouseEventHandler = (type: NativeMouseEventType, x: number , y: number) => void
+    export type NativeMouseEventHandler = (x: number , y: number) => void
 
     class NativeMouseInstance extends EventEmitter {
         unref: () => void
