@@ -20,7 +20,7 @@ declare module 'native-mouse' {
         ref: () => void
         destroy: () => void
 
-        on(event: NativeMouseEventType, listener: NativeMouseEventHandler): this;
+        on(event: NativeMouseEventType | string, listener: NativeMouseEventHandler): this;
     }
 
     const _default: NativeMouseInstance;
