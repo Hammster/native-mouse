@@ -5,9 +5,9 @@ Unifies [win-mouse]() and [mac-mouse]()
 Mouse tracking for Windows. Receive the screen position of various mouse events. The events are also emitted while another application is in the foreground.
 
 ```
-npm install win-mouse
+npm install native-mouse
 // or
-yarn add win-mouse
+yarn add native-mouse
 ```
 
 # Electron
