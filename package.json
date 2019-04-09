@@ -1,7 +1,12 @@
 {
   "name": "native-mouse",
   "version": "1.0.0",
-  "description": "Native Mouse tracking",
+  "description": "Native Mouse events",
+  "author": "Hans Koch",
+  "bugs": {
+    "url": "https://github.com/Hammster/native-mouse/issues"
+  },
+  "homepage": "https://github.com/Hammster/native-mouse",
   "main": "index.js",
   "typings": "./index.d.ts",
   "scripts": {
@@ -23,10 +28,10 @@
   "license": "MIT",
   "dependencies": {
     "bindings": "^1.5.0",
-    "nan": "^2.12.1"
+    "nan": "^2.13.2"
   },
   "devDependencies": {
-    "@types/node": "^11.11.0",
-    "esm": "^3.2.13"
+    "@types/node": "^11.13.2",
+    "esm": "^3.2.22"
   }
 }
