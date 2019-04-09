@@ -5,6 +5,9 @@ const char* LEFT_UP = "left-up";
 const char* RIGHT_DOWN = "right-down";
 const char* RIGHT_UP = "right-up";
 const char* MOVE = "move";
+// Artificial events ported from macOS behavior
+const char* LEFT_DRAG = "left-drag";
+const char* RIGHT_DRAG = "left-drag";
 
 bool IsMouseEvent(WPARAM type) {
 	return type == WM_LBUTTONDOWN ||
@@ -41,6 +44,7 @@ Mouse::Mouse(Nan::Callback* callback) {
 
 	readIndex = 0;
 	writeIndex = 0;
+	dragEventInitializer = NULL;
 
 	event_callback = callback;
 	async_resource = new Nan::AsyncResource("win-mouse:Mouse");
@@ -103,6 +107,8 @@ void Mouse::HandleSend() {
 	Nan::HandleScope scope;
 	uv_mutex_lock(&lock);
 
+	const char* name;
+
 	while (readIndex != writeIndex) {
 		MouseEvent e = {
 			eventBuffer[readIndex]->x,
@@ -110,33 +116,47 @@ void Mouse::HandleSend() {
 			eventBuffer[readIndex]->type
 		};
 		readIndex = (readIndex + 1) % BUFFER_SIZE;
-		const char* name;
-
 		switch (e.type)
 		{
 			case WM_LBUTTONDOWN:
 				name = LEFT_DOWN;
+				dragEventInitializer = LEFT_DOWN;
 				break;
 			
 			case WM_LBUTTONUP:
 				name = LEFT_UP;
+				if (dragEventInitializer == LEFT_DOWN) {
+					dragEventInitializer = NULL;
+				}
 				break;
 
 			case WM_RBUTTONDOWN:
 				name = RIGHT_DOWN;
+				dragEventInitializer = RIGHT_DOWN;
 				break;
 
 			case WM_RBUTTONUP:
 				name = RIGHT_UP;
+				if (dragEventInitializer == RIGHT_DOWN) {
+					dragEventInitializer = NULL;
+				}
 				break;
 
 			case WM_MOUSEMOVE:
-				name = MOVE;
+				if (dragEventInitializer == RIGHT_DOWN) {
+					name = RIGHT_DRAG;
+				} else if (dragEventInitializer == LEFT_DOWN) {
+					name = LEFT_DRAG;
+				} else {
+					name = MOVE;
+				}
+
 				break;
 		
 			default:
 				break;
 		}
+		
 
 		Local<Value> argv[] = {
 			Nan::New<String>(name).ToLocalChecked(),

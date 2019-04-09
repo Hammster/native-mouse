@@ -40,35 +40,6 @@ class NativeMouseInstance extends EventEmitter {
 
 	init() {
 		this.mouse = new Mouse((type, x, y) => {
-			if(isWindows) {
-				// Windows has no nativ left-drag and right-drag
-				switch(type) {
-					case 'left-down':
-						this.left = true
-						break
-					
-					case 'left-up':
-						this.left = false
-						break
-					
-					case 'right-down':
-						this.right = true
-						break
-					
-					case 'right-up':
-						this.right = false
-						break
-
-					case 'move':
-						if(this.left) {
-							this.type = 'left-drag'
-						}
-						if(this.right) {
-							this.type = 'right-drag'
-						}
-						break;
-				}
-			}
 			this.emit(type, x, y)
 		})
 	}

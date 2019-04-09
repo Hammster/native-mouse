@@ -29,6 +29,7 @@ class Mouse : public Nan::ObjectWrap {
 		MouseEvent* eventBuffer[BUFFER_SIZE];
 		unsigned int readIndex;
 		unsigned int writeIndex;
+		const char* dragEventInitializer;
 		Nan::Callback* event_callback;
 		Nan::AsyncResource* async_resource;
 		uv_async_t* async;
