@@ -1,17 +1,13 @@
 const util = require('util')
 const EventEmitter = require('events').EventEmitter
 const bindings = require('bindings')
-const os = require('os')
 const Mouse = bindings('native-mouse').Mouse;
-const isWindows = (os.platform() === 'win32')
 
 class NativeMouseInstance extends EventEmitter {
 	constructor () {
 		super()
 		
 		this.mouse = null
-		this.left = false
-		this.right = false
 
 		// Only create mouse if there is a listener
 		this.once('newListener', this.init)
