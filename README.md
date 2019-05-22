@@ -1,8 +1,8 @@
 # native-mouse
 
-Unifies [win-mouse]() and [mac-mouse]()
+Unifies [win-mouse](https://github.com/kapetan/win-mouse) and [osx-mouse](https://github.com/kapetan/osx-mouse)
 
-Mouse tracking for Windows. Receive the screen position of various mouse events. The events are also emitted while another application is in the foreground.
+Mouse tracking for Windows and macOS. Receive the screen position of various mouse events. The events are also emitted while another application is in the foreground.
 
 ```
 npm install native-mouse
