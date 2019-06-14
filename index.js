@@ -6,7 +6,6 @@ const Mouse = bindings('native-mouse').Mouse;
 class NativeMouseInstance extends EventEmitter {
 	constructor () {
 		super()
-		
 		this.mouse = null
 
 		// Only create mouse if there is a listener
@@ -49,11 +48,10 @@ const instance = new NativeMouseInstance()
 function exitHandler(options, exitCode) {
 	instance.destroy()
 
-  if (options.exit) {
+	if (options.exit) {
 		process.exit(exitCode)
 	}
 }
-
 
 //do something when app is closing
 process.on('exit', exitHandler.bind(null,{cleanup:true}));

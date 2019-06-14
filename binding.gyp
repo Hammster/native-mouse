@@ -2,6 +2,7 @@
 	"targets": [
 		{
 			"target_name": "native-mouse",
+			'win_delay_load_hook': 'true',
 			'conditions': [
 				['OS == "win"', {
 					"sources": [

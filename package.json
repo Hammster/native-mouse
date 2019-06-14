@@ -28,10 +28,10 @@
   "license": "MIT",
   "dependencies": {
     "bindings": "^1.5.0",
-    "nan": "^2.13.2"
+    "nan": "^2.14.0"
   },
   "devDependencies": {
-    "@types/node": "^11.13.2",
-    "esm": "^3.2.22"
+    "@types/node": "^12.0.2",
+    "esm": "^3.2.25"
   }
 }
