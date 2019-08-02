@@ -16,6 +16,8 @@ for (const event of events) {
     })
 }
 
-mouse.destroy()
+if (process.argv0 === 'interactive') {
+    mouse.destroy()
+}
 
 // @TODO trigger mouse automation
