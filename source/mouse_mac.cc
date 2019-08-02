@@ -178,7 +178,7 @@ void Mouse::HandleSend() {
 			case kCGEventLeftMouseDown:
 				name = LEFT_DOWN;
 				break;
-			
+
 			case kCGEventLeftMouseUp:
 				name = LEFT_UP;
 				break;
@@ -187,8 +187,12 @@ void Mouse::HandleSend() {
 				name = RIGHT_DOWN;
 				break;
 
-			case kCGEventMouseMoved:
+			case kCGEventRightMouseUp:
 				name = RIGHT_UP;
+				break;
+
+			case kCGEventMouseMoved:
+				name = MOVE;
 				break;
 
 			case kCGEventLeftMouseDragged:
