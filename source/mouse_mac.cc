@@ -76,7 +76,7 @@ Mouse::~Mouse() {
 	}
 }
 
-void Mouse::Initialize(Handle<Object> exports) {
+void Mouse::Initialize(Local<Object> exports) {
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(Mouse::New);

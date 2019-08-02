@@ -1,6 +1,6 @@
 #include "mouse_mac.h"
 
-void Initialize(Handle<Object> exports) {
+void Initialize(Local<Object> exports) {
 	Mouse::Initialize(exports);
 }
 
