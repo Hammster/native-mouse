@@ -2,7 +2,6 @@
 #define _MOUSE_H
 
 #include <nan.h>
-
 #include "mouse_hook_win.h"
 
 using namespace v8;
