@@ -12,7 +12,7 @@ const events = [
 
 for (const event of events) {
     mouse.on(event, function(x, y) {
-        console.log(x, y)
+        console.log(event, x, y)
     })
 }
 
