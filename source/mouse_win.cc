@@ -55,7 +55,7 @@ Mouse::Mouse(Nan::Callback *callback)
 	event_callback = callback;
 	async_resource = new Nan::AsyncResource("native-mouse:Mouse");
 	stopped = false;
-
+	
 	uv_async_init(uv_default_loop(), async, OnSend);
 	uv_mutex_init(&lock);
 
@@ -105,6 +105,7 @@ void Mouse::HandleEvent(WPARAM type, POINT point)
 {
 	if (!IsMouseEvent(type))
 		return;
+
 	uv_mutex_lock(&lock);
 	eventBuffer[writeIndex]->x = point.x;
 	eventBuffer[writeIndex]->y = point.y;
@@ -172,7 +173,6 @@ void Mouse::HandleSend()
 			{
 				name = MOVE;
 			}
-
 			break;
 
 		default:
@@ -185,7 +185,7 @@ void Mouse::HandleSend()
 			Nan::New<Number>(e.y)};
 
 		event_callback->Call(3, argv, async_resource);
-	}
+	} 
 
 	uv_mutex_unlock(&lock);
 }

@@ -92,21 +92,19 @@ void MouseHookManager::Unregister(MouseHookRef ref)
 
 void MouseHookManager::_HandleEvent(WPARAM type, POINT point)
 {
-	// uv_mutex_lock(&event_lock);
+	uv_mutex_lock(&event_lock);
 
 	for (std::list<MouseHookRef>::iterator it = listeners->begin(); it != listeners->end(); it++)
 	{
 		(*it)->callback(type, point, (*it)->data);
 	}
 
-	// uv_mutex_unlock(&event_lock);
+	uv_mutex_unlock(&event_lock);
 }
 
 void MouseHookManager::_Run()
 {
 	MSG msg;
-	// BOOL val;
-
 	uv_mutex_lock(&init_lock);
 
 	PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
@@ -125,7 +123,6 @@ void MouseHookManager::_Run()
 
 		if (msg.message == WM_STOP_MESSAGE_LOOP)
 			break;
-		// printf("general loop");
 	}
 
 	UnhookWindowsHookEx(hook);
