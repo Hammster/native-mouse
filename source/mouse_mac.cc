@@ -1,48 +1,55 @@
 #include "mouse_mac.h"
 
-const char* LEFT_DOWN = "left-down";
-const char* LEFT_UP = "left-up";
-const char* RIGHT_DOWN = "right-down";
-const char* RIGHT_UP = "right-up";
-const char* MOVE = "move";
-const char* LEFT_DRAG = "left-drag";
-const char* RIGHT_DRAG = "right-drag";
+const char *LEFT_DOWN = "left-down";
+const char *LEFT_UP = "left-up";
+const char *RIGHT_DOWN = "right-down";
+const char *RIGHT_UP = "right-up";
+const char *MOVE = "move";
+const char *LEFT_DRAG = "left-drag";
+const char *RIGHT_DRAG = "right-drag";
 
-bool IsMouseEvent(CGEventType type) {
+bool IsMouseEvent(CGEventType type)
+{
 	return type == kCGEventLeftMouseDown ||
-		type == kCGEventLeftMouseUp ||
-		type == kCGEventRightMouseDown ||
-		type == kCGEventRightMouseUp ||
-		type == kCGEventMouseMoved ||
-		type == kCGEventLeftMouseDragged ||
-		type == kCGEventRightMouseDragged;
+		   type == kCGEventLeftMouseUp ||
+		   type == kCGEventRightMouseDown ||
+		   type == kCGEventRightMouseUp ||
+		   type == kCGEventMouseMoved ||
+		   type == kCGEventLeftMouseDragged ||
+		   type == kCGEventRightMouseDragged;
 }
 
-void RunThread(void* arg) {
-	Mouse* mouse = (Mouse*) arg;
+void RunThread(void *arg)
+{
+	Mouse *mouse = (Mouse *)arg;
 	mouse->Run();
 }
 
-CGEventRef OnMouseEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* context) {
-	Mouse* mouse = (Mouse*) context;
+CGEventRef OnMouseEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *context)
+{
+	Mouse *mouse = (Mouse *)context;
 	mouse->HandleEvent(type, event);
 	return NULL;
 }
 
-NAUV_WORK_CB(OnSend) {
-	Mouse* mouse = (Mouse*) async->data;
+NAUV_WORK_CB(OnSend)
+{
+	Mouse *mouse = (Mouse *)async->data;
 	mouse->HandleSend();
 }
 
-void OnClose(uv_handle_t* handle) {
-	uv_async_t* async = (uv_async_t*) handle;
+void OnClose(uv_handle_t *handle)
+{
+	uv_async_t *async = (uv_async_t *)handle;
 	delete async;
 }
 
 Nan::Persistent<Function> Mouse::constructor;
 
-Mouse::Mouse(Nan::Callback* callback) {
-	for(size_t i = 0; i < BUFFER_SIZE; i++) {
+Mouse::Mouse(Nan::Callback *callback)
+{
+	for (size_t i = 0; i < BUFFER_SIZE; i++)
+	{
 		eventBuffer[i] = new MouseEvent();
 	}
 
@@ -61,7 +68,8 @@ Mouse::Mouse(Nan::Callback* callback) {
 	uv_thread_create(&thread, RunThread, this);
 }
 
-Mouse::~Mouse() {
+Mouse::~Mouse()
+{
 	Stop();
 
 	uv_mutex_destroy(&async_lock);
@@ -71,12 +79,14 @@ Mouse::~Mouse() {
 	delete event_callback;
 	delete async_resource;
 
-	for(size_t i = 0; i < BUFFER_SIZE; i++) {
+	for (size_t i = 0; i < BUFFER_SIZE; i++)
+	{
 		delete eventBuffer[i];
 	}
 }
 
-void Mouse::Initialize(Local<Object> exports) {
+void Mouse::Initialize(Local<Object> exports)
+{
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(Mouse::New);
@@ -91,15 +101,16 @@ void Mouse::Initialize(Local<Object> exports) {
 	Nan::Set(exports, Nan::New<String>("Mouse").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
 }
 
-void Mouse::Run() {
+void Mouse::Run()
+{
 	CFRunLoopRef ref = CFRunLoopGetCurrent();
 	CGEventMask mask = CGEventMaskBit(kCGEventLeftMouseDown) |
-		CGEventMaskBit(kCGEventLeftMouseUp) |
-		CGEventMaskBit(kCGEventRightMouseDown) |
-		CGEventMaskBit(kCGEventRightMouseUp) |
-		CGEventMaskBit(kCGEventMouseMoved) |
-		CGEventMaskBit(kCGEventLeftMouseDragged) |
-		CGEventMaskBit(kCGEventRightMouseDragged);
+					   CGEventMaskBit(kCGEventLeftMouseUp) |
+					   CGEventMaskBit(kCGEventRightMouseDown) |
+					   CGEventMaskBit(kCGEventRightMouseUp) |
+					   CGEventMaskBit(kCGEventMouseMoved) |
+					   CGEventMaskBit(kCGEventLeftMouseDragged) |
+					   CGEventMaskBit(kCGEventRightMouseDragged);
 
 	CFMachPortRef tap = CGEventTapCreate(
 		kCGHIDEventTap,
@@ -126,27 +137,32 @@ void Mouse::Run() {
 	CFRelease(tap);
 }
 
-void Mouse::Stop() {
-	if(stopped) return;
+void Mouse::Stop()
+{
+	if (stopped)
+		return;
 	stopped = true;
 
 	uv_mutex_lock(&async_cond_lock);
-	while(loop_ref == NULL) uv_cond_wait(&async_cond, &async_cond_lock);
+	while (loop_ref == NULL)
+		uv_cond_wait(&async_cond, &async_cond_lock);
 	CFRunLoopRef ref = loop_ref;
 	uv_mutex_unlock(&async_cond_lock);
 
 	CFRunLoopPerformBlock(ref, kCFRunLoopCommonModes, ^{
-		CFRunLoopRef current = CFRunLoopGetCurrent();
-		CFRunLoopStop(current);
+	  CFRunLoopRef current = CFRunLoopGetCurrent();
+	  CFRunLoopStop(current);
 	});
 
 	CFRunLoopWakeUp(ref);
-	uv_close((uv_handle_t*) async, OnClose);
+	uv_close((uv_handle_t *)async, OnClose);
 	uv_thread_join(&thread);
 }
 
-void Mouse::HandleEvent(CGEventType type, CGEventRef e) {
-	if(!IsMouseEvent(type)) return;
+void Mouse::HandleEvent(CGEventType type, CGEventRef e)
+{
+	if (!IsMouseEvent(type))
+		return;
 
 	CGPoint location = CGEventGetLocation(e);
 	uv_mutex_lock(&async_lock);
@@ -158,60 +174,61 @@ void Mouse::HandleEvent(CGEventType type, CGEventRef e) {
 	uv_mutex_unlock(&async_lock);
 }
 
-void Mouse::HandleSend() {
-	if(stopped) return;
+void Mouse::HandleSend()
+{
+	if (stopped)
+		return;
 
 	Nan::HandleScope scope;
 	uv_mutex_lock(&async_lock);
 
-	while(readIndex != writeIndex) {
+	while (readIndex != writeIndex)
+	{
 		MouseEvent e = {
 			eventBuffer[readIndex]->x,
 			eventBuffer[readIndex]->y,
-			eventBuffer[readIndex]->type
-		};
+			eventBuffer[readIndex]->type};
 		readIndex = (readIndex + 1) % BUFFER_SIZE;
-		const char* name;
+		const char *name;
 
 		switch (e.type)
 		{
-			case kCGEventLeftMouseDown:
-				name = LEFT_DOWN;
-				break;
+		case kCGEventLeftMouseDown:
+			name = LEFT_DOWN;
+			break;
 
-			case kCGEventLeftMouseUp:
-				name = LEFT_UP;
-				break;
+		case kCGEventLeftMouseUp:
+			name = LEFT_UP;
+			break;
 
-			case kCGEventRightMouseDown:
-				name = RIGHT_DOWN;
-				break;
+		case kCGEventRightMouseDown:
+			name = RIGHT_DOWN;
+			break;
 
-			case kCGEventRightMouseUp:
-				name = RIGHT_UP;
-				break;
+		case kCGEventRightMouseUp:
+			name = RIGHT_UP;
+			break;
 
-			case kCGEventMouseMoved:
-				name = MOVE;
-				break;
+		case kCGEventMouseMoved:
+			name = MOVE;
+			break;
 
-			case kCGEventLeftMouseDragged:
-				name = LEFT_DRAG;
-				break;
+		case kCGEventLeftMouseDragged:
+			name = LEFT_DRAG;
+			break;
 
-			case kCGEventRightMouseDragged:
-				name = RIGHT_DRAG;
-				break;
+		case kCGEventRightMouseDragged:
+			name = RIGHT_DRAG;
+			break;
 
-			default:
-				break;
+		default:
+			break;
 		}
 
 		Local<Value> argv[] = {
 			Nan::New<String>(name).ToLocalChecked(),
 			Nan::New<Number>(e.x),
-			Nan::New<Number>(e.y)
-		};
+			Nan::New<Number>(e.y)};
 
 		event_callback->Call(3, argv, async_resource);
 	}
@@ -219,34 +236,38 @@ void Mouse::HandleSend() {
 	uv_mutex_unlock(&async_lock);
 }
 
-NAN_METHOD(Mouse::New) {
-	Nan::Callback* callback = new Nan::Callback(info[0].As<Function>());
+NAN_METHOD(Mouse::New)
+{
+	Nan::Callback *callback = new Nan::Callback(info[0].As<Function>());
 
-	Mouse* obj = new Mouse(callback);
+	Mouse *obj = new Mouse(callback);
 	obj->Wrap(info.This());
 	obj->Ref();
 
 	info.GetReturnValue().Set(info.This());
 }
 
-NAN_METHOD(Mouse::Destroy) {
-	Mouse* mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
+NAN_METHOD(Mouse::Destroy)
+{
+	Mouse *mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
 	mouse->Stop();
 	mouse->Unref();
 
 	info.GetReturnValue().SetUndefined();
 }
 
-NAN_METHOD(Mouse::AddRef) {
-	Mouse* mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
-	uv_ref((uv_handle_t*) mouse->async);
+NAN_METHOD(Mouse::AddRef)
+{
+	Mouse *mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
+	uv_ref((uv_handle_t *)mouse->async);
 
 	info.GetReturnValue().SetUndefined();
 }
 
-NAN_METHOD(Mouse::RemoveRef) {
-	Mouse* mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
-	uv_unref((uv_handle_t*) mouse->async);
+NAN_METHOD(Mouse::RemoveRef)
+{
+	Mouse *mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
+	uv_unref((uv_handle_t *)mouse->async);
 
 	info.GetReturnValue().SetUndefined();
 }

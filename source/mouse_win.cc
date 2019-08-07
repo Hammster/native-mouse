@@ -1,44 +1,50 @@
 #include "mouse_win.h"
 
-const char* LEFT_DOWN = "left-down";
-const char* LEFT_UP = "left-up";
-const char* RIGHT_DOWN = "right-down";
-const char* RIGHT_UP = "right-up";
-const char* MOVE = "move";
+const char *LEFT_DOWN = "left-down";
+const char *LEFT_UP = "left-up";
+const char *RIGHT_DOWN = "right-down";
+const char *RIGHT_UP = "right-up";
+const char *MOVE = "move";
 // Artificial events ported from macOS behavior
-const char* LEFT_DRAG = "left-drag";
-const char* RIGHT_DRAG = "left-drag";
+const char *LEFT_DRAG = "left-drag";
+const char *RIGHT_DRAG = "left-drag";
 
-bool IsMouseEvent(WPARAM type) {
+bool IsMouseEvent(WPARAM type)
+{
 	return type == WM_LBUTTONDOWN ||
-		type == WM_LBUTTONUP ||
-		type == WM_RBUTTONDOWN ||
-		type == WM_RBUTTONUP ||
-		type == WM_MOUSEMOVE;
+		   type == WM_LBUTTONUP ||
+		   type == WM_RBUTTONDOWN ||
+		   type == WM_RBUTTONUP ||
+		   type == WM_MOUSEMOVE;
 }
 
-void OnMouseEvent(WPARAM type, POINT point, void* data) {
-	Mouse* mouse = (Mouse*) data;
+void OnMouseEvent(WPARAM type, POINT point, void *data)
+{
+	Mouse *mouse = (Mouse *)data;
 	mouse->HandleEvent(type, point);
 }
 
-NAUV_WORK_CB(OnSend) {
-	Mouse* mouse = (Mouse*) async->data;
+NAUV_WORK_CB(OnSend)
+{
+	Mouse *mouse = (Mouse *)async->data;
 	mouse->HandleSend();
 }
 
-void OnClose(uv_handle_t* handle) {
-	uv_async_t* async = (uv_async_t*) handle;
+void OnClose(uv_handle_t *handle)
+{
+	uv_async_t *async = (uv_async_t *)handle;
 	delete async;
 }
 
 Nan::Persistent<Function> Mouse::constructor;
 
-Mouse::Mouse(Nan::Callback* callback) {
+Mouse::Mouse(Nan::Callback *callback)
+{
 	async = new uv_async_t;
 	async->data = this;
 
-	for (size_t i = 0; i < BUFFER_SIZE; i++) {
+	for (size_t i = 0; i < BUFFER_SIZE; i++)
+	{
 		eventBuffer[i] = new MouseEvent();
 	}
 
@@ -56,18 +62,21 @@ Mouse::Mouse(Nan::Callback* callback) {
 	hook_ref = MouseHookRegister(OnMouseEvent, this);
 }
 
-Mouse::~Mouse() {
+Mouse::~Mouse()
+{
 	Stop();
 	uv_mutex_destroy(&lock);
 	delete event_callback;
 	delete async_resource;
 
-	for (size_t i = 0; i < BUFFER_SIZE; i++) {
+	for (size_t i = 0; i < BUFFER_SIZE; i++)
+	{
 		delete eventBuffer[i];
 	}
 }
 
-void Mouse::Initialize(Local<Object> exports) {
+void Mouse::Initialize(Local<Object> exports)
+{
 	Nan::HandleScope scope;
 
 	Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(Mouse::New);
@@ -82,16 +91,20 @@ void Mouse::Initialize(Local<Object> exports) {
 	Nan::Set(exports, Nan::New<String>("Mouse").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
 }
 
-void Mouse::Stop() {
-	if(stopped)	return;
+void Mouse::Stop()
+{
+	if (stopped)
+		return;
 	stopped = true;
 
 	MouseHookUnregister(hook_ref);
-	uv_close((uv_handle_t*) async, OnClose);
+	uv_close((uv_handle_t *)async, OnClose);
 }
 
-void Mouse::HandleEvent(WPARAM type, POINT point) {
-	if(!IsMouseEvent(type)) return;
+void Mouse::HandleEvent(WPARAM type, POINT point)
+{
+	if (!IsMouseEvent(type))
+		return;
 	uv_mutex_lock(&lock);
 	eventBuffer[writeIndex]->x = point.x;
 	eventBuffer[writeIndex]->y = point.y;
@@ -101,68 +114,75 @@ void Mouse::HandleEvent(WPARAM type, POINT point) {
 	uv_mutex_unlock(&lock);
 }
 
-void Mouse::HandleSend() {
-	if(stopped) return;
+void Mouse::HandleSend()
+{
+	if (stopped)
+		return;
 
 	Nan::HandleScope scope;
 	uv_mutex_lock(&lock);
 
-	const char* name;
+	const char *name;
 
-	while (readIndex != writeIndex) {
+	while (readIndex != writeIndex)
+	{
 		MouseEvent e = {
 			eventBuffer[readIndex]->x,
 			eventBuffer[readIndex]->y,
-			eventBuffer[readIndex]->type
-		};
+			eventBuffer[readIndex]->type};
 		readIndex = (readIndex + 1) % BUFFER_SIZE;
 		switch (e.type)
 		{
-			case WM_LBUTTONDOWN:
-				name = LEFT_DOWN;
-				dragEventInitializer = LEFT_DOWN;
-				break;
-			
-			case WM_LBUTTONUP:
-				name = LEFT_UP;
-				if (dragEventInitializer == LEFT_DOWN) {
-					dragEventInitializer = NULL;
-				}
-				break;
+		case WM_LBUTTONDOWN:
+			name = LEFT_DOWN;
+			dragEventInitializer = LEFT_DOWN;
+			break;
 
-			case WM_RBUTTONDOWN:
-				name = RIGHT_DOWN;
-				dragEventInitializer = RIGHT_DOWN;
-				break;
+		case WM_LBUTTONUP:
+			name = LEFT_UP;
+			if (dragEventInitializer == LEFT_DOWN)
+			{
+				dragEventInitializer = NULL;
+			}
+			break;
 
-			case WM_RBUTTONUP:
-				name = RIGHT_UP;
-				if (dragEventInitializer == RIGHT_DOWN) {
-					dragEventInitializer = NULL;
-				}
-				break;
+		case WM_RBUTTONDOWN:
+			name = RIGHT_DOWN;
+			dragEventInitializer = RIGHT_DOWN;
+			break;
 
-			case WM_MOUSEMOVE:
-				if (dragEventInitializer == RIGHT_DOWN) {
-					name = RIGHT_DRAG;
-				} else if (dragEventInitializer == LEFT_DOWN) {
-					name = LEFT_DRAG;
-				} else {
-					name = MOVE;
-				}
+		case WM_RBUTTONUP:
+			name = RIGHT_UP;
+			if (dragEventInitializer == RIGHT_DOWN)
+			{
+				dragEventInitializer = NULL;
+			}
+			break;
 
-				break;
-		
-			default:
-				break;
+		case WM_MOUSEMOVE:
+			if (dragEventInitializer == RIGHT_DOWN)
+			{
+				name = RIGHT_DRAG;
+			}
+			else if (dragEventInitializer == LEFT_DOWN)
+			{
+				name = LEFT_DRAG;
+			}
+			else
+			{
+				name = MOVE;
+			}
+
+			break;
+
+		default:
+			break;
 		}
-		
 
 		Local<Value> argv[] = {
 			Nan::New<String>(name).ToLocalChecked(),
 			Nan::New<Number>(e.x),
-			Nan::New<Number>(e.y)
-		};
+			Nan::New<Number>(e.y)};
 
 		event_callback->Call(3, argv, async_resource);
 	}
@@ -170,34 +190,38 @@ void Mouse::HandleSend() {
 	uv_mutex_unlock(&lock);
 }
 
-NAN_METHOD(Mouse::New) {
-	Nan::Callback* callback = new Nan::Callback(info[0].As<Function>());
+NAN_METHOD(Mouse::New)
+{
+	Nan::Callback *callback = new Nan::Callback(info[0].As<Function>());
 
-	Mouse* mouse = new Mouse(callback);
+	Mouse *mouse = new Mouse(callback);
 	mouse->Wrap(info.This());
 	mouse->Ref();
 
 	info.GetReturnValue().Set(info.This());
 }
 
-NAN_METHOD(Mouse::Destroy) {
-	Mouse* mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
+NAN_METHOD(Mouse::Destroy)
+{
+	Mouse *mouse = Nan::ObjectWrap::Unwrap<Mouse>(info.Holder());
 	mouse->Stop();
 	mouse->Unref();
 
 	info.GetReturnValue().SetUndefined();
 }
 
-NAN_METHOD(Mouse::AddRef) {
-	Mouse* mouse = ObjectWrap::Unwrap<Mouse>(info.Holder());
-	uv_ref((uv_handle_t*) mouse->async);
+NAN_METHOD(Mouse::AddRef)
+{
+	Mouse *mouse = ObjectWrap::Unwrap<Mouse>(info.Holder());
+	uv_ref((uv_handle_t *)mouse->async);
 
 	info.GetReturnValue().SetUndefined();
 }
 
-NAN_METHOD(Mouse::RemoveRef) {
-	Mouse* mouse = ObjectWrap::Unwrap<Mouse>(info.Holder());
-	uv_unref((uv_handle_t*) mouse->async);
+NAN_METHOD(Mouse::RemoveRef)
+{
+	Mouse *mouse = ObjectWrap::Unwrap<Mouse>(info.Holder());
+	uv_unref((uv_handle_t *)mouse->async);
 
 	info.GetReturnValue().SetUndefined();
 }
