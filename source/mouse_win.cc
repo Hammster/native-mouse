@@ -53,7 +53,7 @@ Mouse::Mouse(Nan::Callback *callback)
 	dragEventInitializer = NULL;
 
 	event_callback = callback;
-	async_resource = new Nan::AsyncResource("win-mouse:Mouse");
+	async_resource = new Nan::AsyncResource("native-mouse:Mouse");
 	stopped = false;
 
 	uv_async_init(uv_default_loop(), async, OnSend);

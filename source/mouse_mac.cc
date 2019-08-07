@@ -60,7 +60,7 @@ Mouse::Mouse(Nan::Callback *callback)
 	loop_ref = NULL;
 	stopped = false;
 	event_callback = callback;
-	async_resource = new Nan::AsyncResource("osx-mouse:Mouse");
+	async_resource = new Nan::AsyncResource("native-mouse:Mouse");
 	uv_async_init(uv_default_loop(), async, OnSend);
 	uv_mutex_init(&async_lock);
 	uv_cond_init(&async_cond);
